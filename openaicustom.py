@@ -4,6 +4,9 @@ from azure.keyvault.secrets import SecretClient
 import logging
 import json
 
+with open('config.json', 'r') as  config_file:
+    config=json.load(config_file)
+
 key_vault_url = f"https://one-leiaws-kv.vault.azure.net"
 secret_name = "AZURE-OPEN-AI-API-KEY"
 
@@ -13,14 +16,14 @@ retrieved_secret = client.get_secret(secret_name)
 api_key = retrieved_secret.value
 
 client = AzureOpenAI(
-  azure_endpoint = "https://one-leiaws-openai.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2024-08-01-preview", 
+  azure_endpoint = config['azure_openai_endpoint'], 
   api_key=api_key,
   api_version="2024-02-01"
 )
 
 def get_tweet_from_assistant(data,tweetLanguage):
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model=config['model'], 
         messages=[
             {"role": "system", "content": "You are an AI assistant that helps me to create post on Twitter. You should provide Tweet for me like a SEO expert."},
             {"role": "user", "content": messageToAssistantForTwitter(data,tweetLanguage)}]
@@ -70,8 +73,10 @@ def get_summary_from_assistant(data,summaryLanguage):
     
 
 def messageToAssistantForSummary(data, summaryLanguage="English") :
+    minWordCount=config['min_summary_paragraph_word_count']
+    maxWordCount=config['max_summary_paragraph_word_count']
     jsonRequirement='{"summary": "[str]","newInsight": "[str]"}'
-    message= f"You should provide a summary (with 4 paragarphs and around 150-300 words, put each paragraphs in the string array) and new insight (2 paragraphs and around 80 words, put each paragraphs in the string array) from the page. Write in {summaryLanguage} for sharing the URL. {data['url']} "
+    message= f"You should provide a summary (with 4 paragarphs and each paragraph around {minWordCount}-{maxWordCount} words, put each paragraphs in the string array) and new insight (2 paragraphs and around {minWordCount} words, put each paragraphs in the string array) from the page. Write in {summaryLanguage} for sharing the URL. {data['url']} "
     message+="Answer in json object with following schema: "+jsonRequirement
     logging.info(message)
     return message

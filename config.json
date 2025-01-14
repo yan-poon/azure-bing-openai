@@ -1,0 +1,7 @@
+{
+  "model": "gpt-4o",
+  "azure_openai_endpoint": "https://one-leiaws-openai.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2024-08-01-preview",
+  "min_summary_paragraph_word_count" : 60,
+  "max_summary_paragraph_word_count" : 80
+
+}
